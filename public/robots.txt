@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://laboratoriolampone.com.ru/sitemap.xml
+
+# Yandex
+User-agent: Yandex
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# Google
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
