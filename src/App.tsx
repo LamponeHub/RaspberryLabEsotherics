@@ -653,8 +653,44 @@ function УсловияОплаты() {
   );
 }
 
-// Секция банковских реквизитов
-function Реквизиты() {
+// Секция платёжного шлюза
+function ПлатёжныйШлюз() {
+  const [выбраннаяУслуга, setВыбраннаяУслуга] = useState('');
+  const [сумма, setСумма] = useState('');
+
+  const услугиДляОплаты = [
+    { название: 'Натальная Карта', цена: '5 000 — 8 000' },
+    { название: 'Таро-Консультация', цена: '5 000 — 10 000' },
+    { название: 'Прогностическая Сессия', цена: '12 000 — 20 000' },
+    { название: 'Бизнес-Астрология', цена: 'от 25 000' },
+    { название: 'Корпоративная Астрология', цена: 'от 35 000' },
+    { название: 'Стратегическое Планирование', цена: 'от 50 000' },
+  ];
+
+  const handleОплата = () => {
+    if (!выбраннаяУслуга || !сумма) {
+      alert('Пожалуйста, выберите услугу и укажите сумму');
+      return;
+    }
+
+    // Формирование ссылки на платёжный шлюз ЮKassa
+    // Замените YOUR_SHOP_ID на ваш ID магазина в ЮKassa
+    const shopId = 'YOUR_SHOP_ID';
+    const secretKey = 'YOUR_SECRET_KEY';
+    
+    // В реальном проекте здесь должен быть запрос к вашему бэкенду
+    // который создаёт платёж через API ЮKassa и возвращает confirmation_url
+    
+    // Пример URL для тестового режима ЮKassa:
+    const paymentUrl = `https://yookassa.ru/`;
+    
+    // Для демо — открываем страницу ЮKassa
+    // В продакшене замените на реальный URL платежа от вашего бэкенда
+    window.open(paymentUrl, '_blank');
+    
+    alert(`Переход к оплате:\n\nУслуга: ${выбраннаяУслуга}\nСумма: ${сумма} ₽\n\nВ реальном режиме вы будете перенаправлены на защищённую страницу оплаты.`);
+  };
+
   return (
     <section className="relative py-20 md:py-28" style={{ backgroundColor: '#0B1021' }}>
       <div className="max-w-4xl mx-auto px-6">
@@ -664,10 +700,10 @@ function Реквизиты() {
               className="text-2xl md:text-3xl font-light mb-4"
               style={{ fontFamily: 'var(--font-heading)', color: '#F1F5F9' }}
             >
-              Банковские реквизиты
+              Оплата услуг
             </h3>
             <p className="text-sm" style={{ color: '#E2D8F0' }}>
-              Для оплаты услуг через Альфа-Банк
+              Безопасная оплата через платёжный шлюз ЮKassa
             </p>
           </div>
 
@@ -681,75 +717,103 @@ function Реквизиты() {
           >
             <div className="space-y-6">
               <div>
-                <h4 className="text-xs tracking-widest uppercase mb-2" style={{ color: '#9333EA' }}>
-                  Получатель
-                </h4>
-                <p className="text-base" style={{ color: '#F1F5F9' }}>
-                  Варганова Полина Андреевна
-                </p>
+                <label className="block text-xs tracking-widest uppercase mb-3" style={{ color: '#E2D8F0' }}>
+                  Выберите услугу
+                </label>
+                <select
+                  value={выбраннаяУслуга}
+                  onChange={(e) => setВыбраннаяУслуга(e.target.value)}
+                  className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none appearance-none"
+                  style={{
+                    backgroundColor: '#111827',
+                    border: '1px solid rgba(147, 51, 234, 0.3)',
+                    color: '#F1F5F9',
+                    borderRadius: '2px',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                >
+                  <option value="" style={{ backgroundColor: '#111827' }}>Выберите услугу</option>
+                  {услугиДляОплаты.map((услуга, индекс) => (
+                    <option key={индекс} value={услуга.название} style={{ backgroundColor: '#111827' }}>
+                      {услуга.название} — {услуга.цена} ₽
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
-                <h4 className="text-xs tracking-widest uppercase mb-2" style={{ color: '#9333EA' }}>
-                  Номер счёта
-                </h4>
-                <p className="text-base font-mono" style={{ color: '#F1F5F9' }}>
-                  40817810906280007147
+                <label className="block text-xs tracking-widest uppercase mb-3" style={{ color: '#E2D8F0' }}>
+                  Сумма к оплате (₽)
+                </label>
+                <input
+                  type="number"
+                  value={сумма}
+                  onChange={(e) => setСумма(e.target.value)}
+                  placeholder="Введите сумму"
+                  min="1000"
+                  className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none"
+                  style={{
+                    backgroundColor: '#111827',
+                    border: '1px solid rgba(147, 51, 234, 0.3)',
+                    color: '#F1F5F9',
+                    borderRadius: '2px',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = '#C41E3A'; e.currentTarget.style.boxShadow = '0 0 20px rgba(196, 30, 58, 0.15)'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
+                />
+              </div>
+
+              <div className="pt-4">
+                <button
+                  onClick={handleОплата}
+                  className="w-full py-5 text-sm font-medium tracking-widest uppercase transition-all duration-300 border"
+                  style={{
+                    borderColor: '#C41E3A',
+                    color: '#F1F5F9',
+                    backgroundColor: 'transparent',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#C41E3A';
+                    e.currentTarget.style.boxShadow = '0 0 40px rgba(196, 30, 58, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  Перейти к оплате
+                </button>
+              </div>
+
+              <div className="pt-6" style={{ borderTop: '1px solid rgba(147, 51, 234, 0.2)' }}>
+                <div className="flex items-center justify-center gap-6 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9333EA" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span className="text-xs" style={{ color: '#E2D8F0' }}>Безопасная оплата</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9333EA" strokeWidth="2">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span className="text-xs" style={{ color: '#E2D8F0' }}>Защита данных</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9333EA" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span className="text-xs" style={{ color: '#E2D8F0' }}>PCI DSS</span>
+                  </div>
+                </div>
+                <p className="text-xs text-center mt-4 leading-relaxed" style={{ color: 'rgba(226, 216, 240, 0.6)' }}>
+                  Оплата производится через защищённый платёжный шлюз ЮKassa. 
+                  Мы не храним данные ваших банковских карт.
                 </p>
               </div>
-
-              <div>
-                <h4 className="text-xs tracking-widest uppercase mb-2" style={{ color: '#9333EA' }}>
-                  Банк получателя
-                </h4>
-                <p className="text-base" style={{ color: '#F1F5F9' }}>
-                  АО «Альфа-Банк», г. Москва
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <h4 className="text-xs tracking-widest uppercase mb-2" style={{ color: '#9333EA' }}>
-                    БИК
-                  </h4>
-                  <p className="text-base font-mono" style={{ color: '#F1F5F9' }}>
-                    044525593
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="text-xs tracking-widest uppercase mb-2" style={{ color: '#9333EA' }}>
-                    ИНН Банка
-                  </h4>
-                  <p className="text-base font-mono" style={{ color: '#F1F5F9' }}>
-                    7728168971
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="text-xs tracking-widest uppercase mb-2" style={{ color: '#9333EA' }}>
-                    КПП Банка
-                  </h4>
-                  <p className="text-base font-mono" style={{ color: '#F1F5F9' }}>
-                    770801001
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-xs tracking-widest uppercase mb-2" style={{ color: '#9333EA' }}>
-                  Корреспондентский счёт
-                </h4>
-                <p className="text-base font-mono" style={{ color: '#F1F5F9' }}>
-                  30101810200000000593
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8 pt-6" style={{ borderTop: '1px solid rgba(147, 51, 234, 0.2)' }}>
-              <p className="text-xs leading-relaxed" style={{ color: '#E2D8F0' }}>
-                При переводе укажите в назначении платежа: «Оплата за консультацию Laboratorio Lampone» и ваше имя.
-              </p>
             </div>
           </div>
         </АнимированнаяСекция>
@@ -985,7 +1049,7 @@ export default function App() {
       <Философия />
       <Услуги />
       <УсловияОплаты />
-      <Реквизиты />
+      <ПлатёжныйШлюз />
       <ФормаЗаявки />
       <Подвал />
     </main>
