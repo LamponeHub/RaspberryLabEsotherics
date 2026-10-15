@@ -1232,6 +1232,131 @@ function ФормаЗаявки() {
   );
 }
 
+// Баннер согласия cookies
+function БаннерCookies() {
+  const [видим, setВидим] = useState(false);
+
+  useEffect(() => {
+    // Проверяем, давал ли пользователь согласие
+    const согласие = localStorage.getItem('cookies_consent');
+    if (!согласие) {
+      // Показываем баннер с задержкой для плавной анимации
+      setTimeout(() => setВидим(true), 1000);
+    }
+  }, []);
+
+  const принять = () => {
+    localStorage.setItem('cookies_consent', 'accepted');
+    setВидим(false);
+  };
+
+  const отклонить = () => {
+    localStorage.setItem('cookies_consent', 'rejected');
+    setВидим(false);
+  };
+
+  if (!видим) return null;
+
+  return (
+    <div
+      className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 animate-fade-in-up"
+      style={{
+        background: 'linear-gradient(135deg, rgba(11, 16, 33, 0.98) 0%, rgba(45, 27, 61, 0.98) 100%)',
+        backdropFilter: 'blur(10px)',
+        borderTop: '1px solid rgba(147, 51, 234, 0.3)',
+      }}
+    >
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+          {/* Иконка */}
+          <div className="flex-shrink-0">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(135deg, rgba(196, 30, 58, 0.2), rgba(147, 51, 234, 0.2))',
+                border: '1px solid rgba(147, 51, 234, 0.4)',
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E5DEFF" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 6v6l4 2"></path>
+              </svg>
+            </div>
+          </div>
+
+          {/* Текст */}
+          <div className="flex-grow">
+            <h3
+              className="text-base md:text-lg font-light mb-2"
+              style={{ fontFamily: 'var(--font-heading)', color: '#F1F5F9' }}
+            >
+              Мы используем cookies
+            </h3>
+            <p className="text-xs md:text-sm leading-relaxed" style={{ color: '#E2D8F0' }}>
+              Этот сайт использует cookies для улучшения вашего опыта, аналитики и персонализации контента.
+              Продолжая использовать сайт, вы соглашаетесь с нашей{' '}
+              <a
+                href="/privacy-policy.html"
+                className="underline transition-colors duration-300"
+                style={{ color: '#C41E3A' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#E5DEFF'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#C41E3A'; }}
+              >
+                Политикой конфиденциальности
+              </a>
+              .
+            </p>
+          </div>
+
+          {/* Кнопки */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
+            <button
+              onClick={отклонить}
+              className="px-6 py-3 text-xs font-medium tracking-widest uppercase transition-all duration-300 border"
+              style={{
+                borderColor: 'rgba(147, 51, 234, 0.4)',
+                color: '#E2D8F0',
+                backgroundColor: 'transparent',
+                fontFamily: 'var(--font-body)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.8)';
+                e.currentTarget.style.backgroundColor = 'rgba(147, 51, 234, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.4)';
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              Отклонить
+            </button>
+            <button
+              onClick={принять}
+              className="px-6 py-3 text-xs font-medium tracking-widest uppercase transition-all duration-300 border"
+              style={{
+                borderColor: '#C41E3A',
+                color: '#F1F5F9',
+                backgroundColor: 'transparent',
+                fontFamily: 'var(--font-body)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#C41E3A';
+                e.currentTarget.style.boxShadow = '0 0 30px rgba(196, 30, 58, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              Принять
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Подвал сайта
 function Подвал() {
   return (
@@ -1279,6 +1404,7 @@ export default function App() {
       <ПлатёжныйШлюз />
       <ФормаЗаявки />
       <Подвал />
+      <БаннерCookies />
     </main>
   );
 }
