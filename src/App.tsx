@@ -910,8 +910,8 @@ function ФормаЗаявки() {
     setЗагрузка(true);
     
     try {
-      // Попытка 1: Отправка через Vercel Serverless Function (SMTP)
-      const response = await fetch('/api/send-email', {
+      // Отправка через PHP скрипт на хостинге
+      const response = await fetch('/api/send-email.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -949,59 +949,12 @@ function ФормаЗаявки() {
         if (typeof window !== 'undefined' && (window as any).ym) {
           (window as any).ym(12345678, 'reachGoal', 'form_submit');
         }
-        return;
       } else {
         throw new Error(data.error || 'Ошибка отправки');
       }
     } catch (err) {
-      console.warn('Основной метод не сработал, пробуем fallback:', err);
-      
-      // Попытка 2: Fallback через FormSubmit.co
-      try {
-        const formData = new FormData();
-        formData.append('name', данныеФормы.имя);
-        formData.append('email', данныеФормы.email);
-        formData.append('message', данныеФормы.цель);
-        formData.append('budget', данныеФормы.бюджет);
-        formData.append('confidentiality', данныеФормы.конфиденциальность ? 'Да' : 'Нет');
-        formData.append('_subject', `Новая заявка с сайта от ${данныеФормы.имя}`);
-        formData.append('_template', 'table');
-        formData.append('_captcha', 'false');
-        
-        const fallbackResponse = await fetch('https://formsubmit.co/ajax/reception@laboratoriolampone.com.ru', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (fallbackResponse.ok) {
-          setОтправлено(true);
-          setДанныеФормы({
-            имя: '',
-            email: '',
-            цель: '',
-            конфиденциальность: false,
-            бюджет: '',
-          });
-          
-          // Отправка события в Google Analytics
-          if (typeof window !== 'undefined' && (window as any).gtag) {
-            (window as any).gtag('event', 'form_submit', {
-              event_category: 'Заявка',
-              event_label: данныеФормы.бюджет,
-            });
-          }
-          
-          // Отправка события в Яндекс.Метрику
-          if (typeof window !== 'undefined' && (window as any).ym) {
-            (window as any).ym(12345678, 'reachGoal', 'form_submit');
-          }
-          return;
-        }
-      } catch (fallbackErr) {
-        console.error('Fallback тоже не сработал:', fallbackErr);
-      }
-      
       setОшибка('Произошла ошибка при отправке. Пожалуйста, напишите нам напрямую на reception@laboratoriolampone.com.ru');
+      console.error('Ошибка отправки формы:', err);
     } finally {
       setЗагрузка(false);
     }
