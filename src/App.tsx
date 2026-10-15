@@ -902,13 +902,15 @@ function ФормаЗаявки() {
 
   const [отправлено, setОтправлено] = useState(false);
   const [ошибка, setОшибка] = useState('');
+  const [загрузка, setЗагрузка] = useState(false);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setОшибка('');
+    setЗагрузка(true);
     
     try {
-      // Отправка через наш backend на SMTP mail.laboratoriolampone.com.ru
+      // Попытка 1: Отправка через Vercel Serverless Function (SMTP)
       const response = await fetch('/api/send-email', {
         method: 'POST',
         headers: {
@@ -947,12 +949,61 @@ function ФормаЗаявки() {
         if (typeof window !== 'undefined' && (window as any).ym) {
           (window as any).ym(12345678, 'reachGoal', 'form_submit');
         }
+        return;
       } else {
         throw new Error(data.error || 'Ошибка отправки');
       }
     } catch (err) {
+      console.warn('Основной метод не сработал, пробуем fallback:', err);
+      
+      // Попытка 2: Fallback через FormSubmit.co
+      try {
+        const formData = new FormData();
+        formData.append('name', данныеФормы.имя);
+        formData.append('email', данныеФормы.email);
+        formData.append('message', данныеФормы.цель);
+        formData.append('budget', данныеФормы.бюджет);
+        formData.append('confidentiality', данныеФормы.конфиденциальность ? 'Да' : 'Нет');
+        formData.append('_subject', `Новая заявка с сайта от ${данныеФормы.имя}`);
+        formData.append('_template', 'table');
+        formData.append('_captcha', 'false');
+        
+        const fallbackResponse = await fetch('https://formsubmit.co/ajax/reception@laboratoriolampone.com.ru', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (fallbackResponse.ok) {
+          setОтправлено(true);
+          setДанныеФормы({
+            имя: '',
+            email: '',
+            цель: '',
+            конфиденциальность: false,
+            бюджет: '',
+          });
+          
+          // Отправка события в Google Analytics
+          if (typeof window !== 'undefined' && (window as any).gtag) {
+            (window as any).gtag('event', 'form_submit', {
+              event_category: 'Заявка',
+              event_label: данныеФормы.бюджет,
+            });
+          }
+          
+          // Отправка события в Яндекс.Метрику
+          if (typeof window !== 'undefined' && (window as any).ym) {
+            (window as any).ym(12345678, 'reachGoal', 'form_submit');
+          }
+          return;
+        }
+      } catch (fallbackErr) {
+        console.error('Fallback тоже не сработал:', fallbackErr);
+      }
+      
       setОшибка('Произошла ошибка при отправке. Пожалуйста, напишите нам напрямую на reception@laboratoriolampone.com.ru');
-      console.error('Ошибка отправки формы:', err);
+    } finally {
+      setЗагрузка(false);
     }
   }, [данныеФормы]);
 
@@ -1147,23 +1198,28 @@ function ФормаЗаявки() {
 
               <button
                 type="submit"
-                className="w-full py-5 text-sm font-medium tracking-widest uppercase transition-all duration-300 border"
+                disabled={загрузка}
+                className="w-full py-5 text-sm font-medium tracking-widest uppercase transition-all duration-300 border disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   borderColor: '#C41E3A',
                   color: '#F1F5F9',
-                  backgroundColor: 'transparent',
+                  backgroundColor: загрузка ? 'rgba(196, 30, 58, 0.3)' : 'transparent',
                   fontFamily: 'var(--font-body)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#C41E3A';
-                  e.currentTarget.style.boxShadow = '0 0 40px rgba(196, 30, 58, 0.3)';
+                  if (!загрузка) {
+                    e.currentTarget.style.backgroundColor = '#C41E3A';
+                    e.currentTarget.style.boxShadow = '0 0 40px rgba(196, 30, 58, 0.3)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.boxShadow = 'none';
+                  if (!загрузка) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
                 }}
               >
-                Отправить запрос
+                {загрузка ? 'Отправка...' : 'Отправить запрос'}
               </button>
             </form>
           )}

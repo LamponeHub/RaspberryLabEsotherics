@@ -1,0 +1,8 @@
+{
+  "name": "laboratorio-lampone-api",
+  "version": "1.0.0",
+  "description": "Serverless API для отправки заявок с сайта",
+  "dependencies": {
+    "nodemailer": "^6.9.7"
+  }
+}
