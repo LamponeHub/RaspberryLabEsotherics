@@ -1,0 +1,22 @@
+{
+  "name": "laboratorio-lampone-email-server",
+  "version": "1.0.0",
+  "description": "Сервер для отправки заявок с сайта Laboratorio Lampone",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": ["email", "smtp", "nodemailer"],
+  "author": "Laboratorio Lampone",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "nodemailer": "^6.9.7",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

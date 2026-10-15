@@ -908,23 +908,24 @@ function ФормаЗаявки() {
     setОшибка('');
     
     try {
-      // Отправка через FormSubmit.co на reception@laboratoriolampone.com.ru
-      const formData = new FormData();
-      formData.append('Имя', данныеФормы.имя);
-      formData.append('Email', данныеФормы.email);
-      formData.append('Цель обращения', данныеФормы.цель);
-      formData.append('Бюджет', данныеФормы.бюджет);
-      formData.append('Согласие на конфиденциальность', данныеФормы.конфиденциальность ? 'Да' : 'Нет');
-      formData.append('_subject', `Новая заявка с сайта Laboratorio Lampone от ${данныеФормы.имя}`);
-      formData.append('_template', 'table');
-      formData.append('_captcha', 'false');
-      
-      const response = await fetch('https://formsubmit.co/ajax/reception@laboratoriolampone.com.ru', {
+      // Отправка через наш backend на SMTP mail.laboratoriolampone.com.ru
+      const response = await fetch('/api/send-email', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: данныеФормы.имя,
+          email: данныеФормы.email,
+          message: данныеФормы.цель,
+          budget: данныеФормы.бюджет,
+          confidentiality: данныеФормы.конфиденциальность,
+        }),
       });
       
-      if (response.ok) {
+      const data = await response.json();
+      
+      if (data.success) {
         setОтправлено(true);
         setДанныеФормы({
           имя: '',
@@ -947,7 +948,7 @@ function ФормаЗаявки() {
           (window as any).ym(12345678, 'reachGoal', 'form_submit');
         }
       } else {
-        throw new Error('Ошибка отправки');
+        throw new Error(data.error || 'Ошибка отправки');
       }
     } catch (err) {
       setОшибка('Произошла ошибка при отправке. Пожалуйста, напишите нам напрямую на reception@laboratoriolampone.com.ru');
