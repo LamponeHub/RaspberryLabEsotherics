@@ -900,24 +900,59 @@ function ФормаЗаявки() {
     бюджет: '',
   });
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const [отправлено, setОтправлено] = useState(false);
+  const [ошибка, setОшибка] = useState('');
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    setОшибка('');
     
-    // Формируем тело письма
-    const тема = encodeURIComponent(`Заявка на консультацию от ${данныеФормы.имя}`);
-    const тело = encodeURIComponent(
-      `Имя: ${данныеФормы.имя}\n` +
-      `Email: ${данныеФормы.email}\n` +
-      `Цель обращения: ${данныеФормы.цель}\n` +
-      `Бюджет: ${данныеФормы.бюджет}\n` +
-      `\n---\n` +
-      `Заявка отправлена с сайта Laboratorio Lampone`
-    );
-    
-    // Открываем почтовый клиент
-    window.location.href = `mailto:reception@laboratoriolampone.com.ru?subject=${тема}&body=${тело}`;
-    
-    alert('Заявка будет отправлена на почту. Если почтовый клиент не открылся, напишите нам на reception@laboratoriolampone.com.ru');
+    try {
+      // Отправка через FormSubmit.co на reception@laboratoriolampone.com.ru
+      const formData = new FormData();
+      formData.append('Имя', данныеФормы.имя);
+      formData.append('Email', данныеФормы.email);
+      formData.append('Цель обращения', данныеФормы.цель);
+      formData.append('Бюджет', данныеФормы.бюджет);
+      formData.append('Согласие на конфиденциальность', данныеФормы.конфиденциальность ? 'Да' : 'Нет');
+      formData.append('_subject', `Новая заявка с сайта Laboratorio Lampone от ${данныеФормы.имя}`);
+      formData.append('_template', 'table');
+      formData.append('_captcha', 'false');
+      
+      const response = await fetch('https://formsubmit.co/ajax/reception@laboratoriolampone.com.ru', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (response.ok) {
+        setОтправлено(true);
+        setДанныеФормы({
+          имя: '',
+          email: '',
+          цель: '',
+          конфиденциальность: false,
+          бюджет: '',
+        });
+        
+        // Отправка события в Google Analytics
+        if (typeof window !== 'undefined' && (window as any).gtag) {
+          (window as any).gtag('event', 'form_submit', {
+            event_category: 'Заявка',
+            event_label: данныеФормы.бюджет,
+          });
+        }
+        
+        // Отправка события в Яндекс.Метрику
+        if (typeof window !== 'undefined' && (window as any).ym) {
+          (window as any).ym(12345678, 'reachGoal', 'form_submit');
+        }
+      } else {
+        throw new Error('Ошибка отправки');
+      }
+    } catch (err) {
+      setОшибка('Произошла ошибка при отправке. Пожалуйста, напишите нам напрямую на reception@laboratoriolampone.com.ru');
+      console.error('Ошибка отправки формы:', err);
+    }
   }, [данныеФормы]);
 
   const стилиПоля: React.CSSProperties = {
@@ -950,128 +985,187 @@ function ФормаЗаявки() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div>
-              <label htmlFor="имя" className="block text-xs tracking-widest uppercase mb-3" style={{ color: '#E2D8F0' }}>
-                Имя
-              </label>
-              <input
-                type="text"
-                id="имя"
-                name="имя"
-                required
-                value={данныеФормы.имя}
-                onChange={(e) => setДанныеФормы({ ...данныеФормы, имя: e.target.value })}
-                className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none"
-                style={стилиПоля}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#C41E3A'; e.currentTarget.style.boxShadow = '0 0 20px rgba(196, 30, 58, 0.15)'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
-                placeholder="Ваше имя"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-xs tracking-widest uppercase mb-3" style={{ color: '#E2D8F0' }}>
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                value={данныеФормы.email}
-                onChange={(e) => setДанныеФормы({ ...данныеФормы, email: e.target.value })}
-                className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none"
-                style={стилиПоля}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#C41E3A'; e.currentTarget.style.boxShadow = '0 0 20px rgba(196, 30, 58, 0.15)'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
-                placeholder="email@example.com"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="цель" className="block text-xs tracking-widest uppercase mb-3" style={{ color: '#E2D8F0' }}>
-                Цель обращения
-              </label>
-              <textarea
-                id="цель"
-                name="цель"
-                rows={4}
-                value={данныеФормы.цель}
-                onChange={(e) => setДанныеФормы({ ...данныеФормы, цель: e.target.value })}
-                className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none resize-none"
-                style={стилиПоля}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#C41E3A'; e.currentTarget.style.boxShadow = '0 0 20px rgba(196, 30, 58, 0.15)'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
-                placeholder="Опишите кратко, что привело вас к нам"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="бюджет" className="block text-xs tracking-widest uppercase mb-3" style={{ color: '#E2D8F0' }}>
-                Бюджет
-              </label>
-              <select
-                id="бюджет"
-                name="бюджет"
-                value={данныеФормы.бюджет}
-                onChange={(e) => setДанныеФормы({ ...данныеФормы, бюджет: e.target.value })}
-                className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none appearance-none"
-                style={{ ...стилиПоля, backgroundImage: `url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239333EA' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#C41E3A'; e.currentTarget.style.boxShadow = '0 0 20px rgba(196, 30, 58, 0.15)'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
-              >
-                <option value="" style={{ backgroundColor: '#111827' }}>Выберите услугу</option>
-                <option value="5000" style={{ backgroundColor: '#111827' }}>5 000 ₽</option>
-                <option value="8000" style={{ backgroundColor: '#111827' }}>8 000 ₽</option>
-                <option value="10000" style={{ backgroundColor: '#111827' }}>10 000 ₽</option>
-                <option value="12000" style={{ backgroundColor: '#111827' }}>12 000 ₽</option>
-                <option value="20000" style={{ backgroundColor: '#111827' }}>20 000 ₽</option>
-                <option value="25000" style={{ backgroundColor: '#111827' }}>25 000 ₽</option>
-                <option value="35000" style={{ backgroundColor: '#111827' }}>35 000 ₽</option>
-                <option value="40000" style={{ backgroundColor: '#111827' }}>40 000 ₽</option>
-                <option value="50000" style={{ backgroundColor: '#111827' }}>50 000 ₽</option>
-                <option value="60000" style={{ backgroundColor: '#111827' }}>60 000 ₽</option>
-              </select>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <input
-                type="checkbox"
-                id="конфиденциальность"
-                name="конфиденциальность"
-                required
-                checked={данныеФормы.конфиденциальность}
-                onChange={(e) => setДанныеФормы({ ...данныеФормы, конфиденциальность: e.target.checked })}
-                className="mt-1 w-4 h-4 accent-[#C41E3A] cursor-pointer"
-              />
-              <label htmlFor="конфиденциальность" className="text-xs leading-relaxed cursor-pointer" style={{ color: '#E2D8F0' }}>
-                Я подтверждаю понимание принципа конфиденциальности и принимаю условия работы
-                в пространстве Laboratorio Lampone. Вся информация остаётся строго в рамках практики.
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-5 text-sm font-medium tracking-widest uppercase transition-all duration-300 border"
+          {отправлено ? (
+            <div
+              className="p-8 text-center"
               style={{
-                borderColor: '#C41E3A',
-                color: '#F1F5F9',
-                backgroundColor: 'transparent',
-                fontFamily: 'var(--font-body)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#C41E3A';
-                e.currentTarget.style.boxShadow = '0 0 40px rgba(196, 30, 58, 0.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.boxShadow = 'none';
+                backgroundColor: 'rgba(45, 27, 61, 0.3)',
+                border: '1px solid rgba(147, 51, 234, 0.3)',
+                borderRadius: '2px',
               }}
             >
-              Отправить запрос
-            </button>
-          </form>
+              <div className="mb-6">
+                <svg
+                  className="mx-auto"
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#C41E3A"
+                  strokeWidth="2"
+                >
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <h3
+                className="text-2xl font-light mb-4"
+                style={{ fontFamily: 'var(--font-heading)', color: '#F1F5F9' }}
+              >
+                Заявка отправлена
+              </h3>
+              <p className="text-sm leading-relaxed mb-6" style={{ color: '#E2D8F0' }}>
+                Спасибо за ваш запрос. Мы свяжемся с вами в течение 48 часов
+                на указанный email адрес.
+              </p>
+              <button
+                onClick={() => setОтправлено(false)}
+                className="text-xs tracking-widest uppercase transition-colors duration-300"
+                style={{ color: '#C41E3A', fontFamily: 'var(--font-body)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#E5DEFF'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#C41E3A'; }}
+              >
+                Отправить ещё одну заявку
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div>
+                <label htmlFor="имя" className="block text-xs tracking-widest uppercase mb-3" style={{ color: '#E2D8F0' }}>
+                  Имя
+                </label>
+                <input
+                  type="text"
+                  id="имя"
+                  name="name"
+                  required
+                  value={данныеФормы.имя}
+                  onChange={(e) => setДанныеФормы({ ...данныеФормы, имя: e.target.value })}
+                  className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none"
+                  style={стилиПоля}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = '#C41E3A'; e.currentTarget.style.boxShadow = '0 0 20px rgba(196, 30, 58, 0.15)'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  placeholder="Ваше имя"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-xs tracking-widest uppercase mb-3" style={{ color: '#E2D8F0' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  value={данныеФормы.email}
+                  onChange={(e) => setДанныеФормы({ ...данныеФормы, email: e.target.value })}
+                  className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none"
+                  style={стилиПоля}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = '#C41E3A'; e.currentTarget.style.boxShadow = '0 0 20px rgba(196, 30, 58, 0.15)'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  placeholder="email@example.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="цель" className="block text-xs tracking-widest uppercase mb-3" style={{ color: '#E2D8F0' }}>
+                  Цель обращения
+                </label>
+                <textarea
+                  id="цель"
+                  name="message"
+                  rows={4}
+                  value={данныеФормы.цель}
+                  onChange={(e) => setДанныеФормы({ ...данныеФормы, цель: e.target.value })}
+                  className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none resize-none"
+                  style={стилиПоля}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = '#C41E3A'; e.currentTarget.style.boxShadow = '0 0 20px rgba(196, 30, 58, 0.15)'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  placeholder="Опишите кратко, что привело вас к нам"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="бюджет" className="block text-xs tracking-widest uppercase mb-3" style={{ color: '#E2D8F0' }}>
+                  Бюджет
+                </label>
+                <select
+                  id="бюджет"
+                  name="budget"
+                  value={данныеФормы.бюджет}
+                  onChange={(e) => setДанныеФормы({ ...данныеФормы, бюджет: e.target.value })}
+                  className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none appearance-none"
+                  style={{ ...стилиПоля, backgroundImage: `url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239333EA' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = '#C41E3A'; e.currentTarget.style.boxShadow = '0 0 20px rgba(196, 30, 58, 0.15)'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
+                >
+                  <option value="" style={{ backgroundColor: '#111827' }}>Выберите услугу</option>
+                  <option value="5000" style={{ backgroundColor: '#111827' }}>5 000 ₽</option>
+                  <option value="8000" style={{ backgroundColor: '#111827' }}>8 000 ₽</option>
+                  <option value="10000" style={{ backgroundColor: '#111827' }}>10 000 ₽</option>
+                  <option value="12000" style={{ backgroundColor: '#111827' }}>12 000 ₽</option>
+                  <option value="20000" style={{ backgroundColor: '#111827' }}>20 000 ₽</option>
+                  <option value="25000" style={{ backgroundColor: '#111827' }}>25 000 ₽</option>
+                  <option value="35000" style={{ backgroundColor: '#111827' }}>35 000 ₽</option>
+                  <option value="40000" style={{ backgroundColor: '#111827' }}>40 000 ₽</option>
+                  <option value="50000" style={{ backgroundColor: '#111827' }}>50 000 ₽</option>
+                  <option value="60000" style={{ backgroundColor: '#111827' }}>60 000 ₽</option>
+                </select>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <input
+                  type="checkbox"
+                  id="конфиденциальность"
+                  name="confidentiality"
+                  required
+                  checked={данныеФормы.конфиденциальность}
+                  onChange={(e) => setДанныеФормы({ ...данныеФормы, конфиденциальность: e.target.checked })}
+                  className="mt-1 w-4 h-4 accent-[#C41E3A] cursor-pointer"
+                />
+                <label htmlFor="конфиденциальность" className="text-xs leading-relaxed cursor-pointer" style={{ color: '#E2D8F0' }}>
+                  Я подтверждаю понимание принципа конфиденциальности и принимаю условия работы
+                  в пространстве Laboratorio Lampone. Вся информация остаётся строго в рамках практики.
+                </label>
+              </div>
+
+              {ошибка && (
+                <div
+                  className="p-4 text-sm"
+                  style={{
+                    backgroundColor: 'rgba(196, 30, 58, 0.1)',
+                    border: '1px solid rgba(196, 30, 58, 0.3)',
+                    color: '#F1F5F9',
+                    borderRadius: '2px',
+                  }}
+                >
+                  {ошибка}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-5 text-sm font-medium tracking-widest uppercase transition-all duration-300 border"
+                style={{
+                  borderColor: '#C41E3A',
+                  color: '#F1F5F9',
+                  backgroundColor: 'transparent',
+                  fontFamily: 'var(--font-body)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#C41E3A';
+                  e.currentTarget.style.boxShadow = '0 0 40px rgba(196, 30, 58, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                Отправить запрос
+              </button>
+            </form>
+          )}
         </АнимированнаяСекция>
       </div>
     </section>
