@@ -720,43 +720,67 @@ function УсловияОплаты() {
 function ПлатёжныйШлюз() {
   const [выбраннаяУслуга, setВыбраннаяУслуга] = useState('');
   const [сумма, setСумма] = useState('');
+  const [загрузка, setЗагрузка] = useState(false);
+  const [ошибка, setОшибка] = useState('');
 
   const услугиДляОплаты = [
-    { название: 'Натальная Карта — Базовый', цена: '5 000' },
-    { название: 'Натальная Карта — Расширенный', цена: '8 000' },
-    { название: 'Таро-Консультация — Один вопрос', цена: '5 000' },
-    { название: 'Таро-Консультация — Комплексный расклад', цена: '10 000' },
-    { название: 'Прогностическая Сессия — Квартал', цена: '12 000' },
-    { название: 'Прогностическая Сессия — Год', цена: '20 000' },
-    { название: 'Бизнес-Астрология — Стандарт', цена: '25 000' },
-    { название: 'Бизнес-Астрология — Расширенный', цена: '40 000' },
-    { название: 'Корпоративная Астрология — До 10 человек', цена: '35 000' },
-    { название: 'Корпоративная Астрология — До 20 человек', цена: '60 000' },
-    { название: 'Стратегическое Планирование', цена: '50 000' },
+    { название: 'Натальная Карта — Базовый', цена: '5000' },
+    { название: 'Натальная Карта — Расширенный', цена: '8000' },
+    { название: 'Таро-Консультация — Один вопрос', цена: '5000' },
+    { название: 'Таро-Консультация — Комплексный расклад', цена: '10000' },
+    { название: 'Прогностическая Сессия — Квартал', цена: '12000' },
+    { название: 'Прогностическая Сессия — Год', цена: '20000' },
+    { название: 'Бизнес-Астрология — Стандарт', цена: '25000' },
+    { название: 'Бизнес-Астрология — Расширенный', цена: '40000' },
+    { название: 'Корпоративная Астрология — До 10 человек', цена: '35000' },
+    { название: 'Корпоративная Астрология — До 20 человек', цена: '60000' },
+    { название: 'Стратегическое Планирование', цена: '50000' },
   ];
 
-  const handleОплата = () => {
+  const handleОплата = async () => {
     if (!выбраннаяУслуга || !сумма) {
-      alert('Пожалуйста, выберите услугу и укажите сумму');
+      setОшибка('Пожалуйста, выберите услугу и укажите сумму');
       return;
     }
 
-    // Формирование ссылки на платёжный шлюз ЮKassa
-    // Замените YOUR_SHOP_ID на ваш ID магазина в ЮKassa
-    const shopId = 'YOUR_SHOP_ID';
-    const secretKey = 'YOUR_SECRET_KEY';
-    
-    // В реальном проекте здесь должен быть запрос к вашему бэкенду
-    // который создаёт платёж через API ЮKassa и возвращает confirmation_url
-    
-    // Пример URL для тестового режима ЮKassa:
-    const paymentUrl = `https://yookassa.ru/`;
-    
-    // Для демо — открываем страницу ЮKassa
-    // В продакшене замените на реальный URL платежа от вашего бэкенда
-    window.open(paymentUrl, '_blank');
-    
-    alert(`Переход к оплате:\n\nУслуга: ${выбраннаяУслуга}\nСумма: ${сумма} ₽\n\nВ реальном режиме вы будете перенаправлены на защищённую страницу оплаты.`);
+    setЗагрузка(true);
+    setОшибка('');
+
+    try {
+      // Находим выбранную услугу для получения числового значения цены
+      const выбраннаяУслугаОбъект = услугиДляОплаты.find(у => у.название === выбраннаяУслуга);
+      const числоваяСумма = parseFloat(сумма);
+
+      if (!выбраннаяУслугаОбъект) {
+        throw new Error('Выбранная услуга не найдена');
+      }
+
+      // Отправляем запрос на создание платежа
+      const response = await fetch('/api/create-payment.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: числоваяСумма,
+          description: выбраннаяУслуга,
+          service: выбраннаяУслуга,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.confirmation_url) {
+        // Перенаправляем на страницу оплаты ЮKassa
+        window.location.href = data.confirmation_url;
+      } else {
+        throw new Error(data.error || 'Ошибка создания платежа');
+      }
+    } catch (err) {
+      console.error('Ошибка оплаты:', err);
+      setОшибка(err instanceof Error ? err.message : 'Произошла ошибка при создании платежа');
+      setЗагрузка(false);
+    }
   };
 
   return (
@@ -790,7 +814,14 @@ function ПлатёжныйШлюз() {
                 </label>
                 <select
                   value={выбраннаяУслуга}
-                  onChange={(e) => setВыбраннаяУслуга(e.target.value)}
+                  onChange={(e) => {
+                    setВыбраннаяУслуга(e.target.value);
+                    // Автоматически заполняем сумму при выборе услуги
+                    const выбраннаяУслугаОбъект = услугиДляОплаты.find(у => у.название === e.target.value);
+                    if (выбраннаяУслугаОбъект) {
+                      setСумма(выбраннаяУслугаОбъект.цена);
+                    }
+                  }}
                   className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none appearance-none"
                   style={{
                     backgroundColor: '#111827',
@@ -803,7 +834,7 @@ function ПлатёжныйШлюз() {
                   <option value="" style={{ backgroundColor: '#111827' }}>Выберите услугу</option>
                   {услугиДляОплаты.map((услуга, индекс) => (
                     <option key={индекс} value={услуга.название} style={{ backgroundColor: '#111827' }}>
-                      {услуга.название} — {услуга.цена} ₽
+                      {услуга.название} — {parseInt(услуга.цена).toLocaleString('ru-RU')} ₽
                     </option>
                   ))}
                 </select>
@@ -818,7 +849,7 @@ function ПлатёжныйШлюз() {
                   value={сумма}
                   onChange={(e) => setСумма(e.target.value)}
                   placeholder="Введите сумму"
-                  min="1000"
+                  min="100"
                   className="w-full px-5 py-4 text-sm transition-all duration-300 outline-none"
                   style={{
                     backgroundColor: '#111827',
@@ -832,26 +863,45 @@ function ПлатёжныйШлюз() {
                 />
               </div>
 
+              {ошибка && (
+                <div
+                  className="p-4 text-sm"
+                  style={{
+                    backgroundColor: 'rgba(196, 30, 58, 0.1)',
+                    border: '1px solid rgba(196, 30, 58, 0.3)',
+                    color: '#F1F5F9',
+                    borderRadius: '2px',
+                  }}
+                >
+                  {ошибка}
+                </div>
+              )}
+
               <div className="pt-4">
                 <button
                   onClick={handleОплата}
-                  className="w-full py-5 text-sm font-medium tracking-widest uppercase transition-all duration-300 border"
+                  disabled={загрузка}
+                  className="w-full py-5 text-sm font-medium tracking-widest uppercase transition-all duration-300 border disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     borderColor: '#C41E3A',
                     color: '#F1F5F9',
-                    backgroundColor: 'transparent',
+                    backgroundColor: загрузка ? 'rgba(196, 30, 58, 0.3)' : 'transparent',
                     fontFamily: 'var(--font-body)',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#C41E3A';
-                    e.currentTarget.style.boxShadow = '0 0 40px rgba(196, 30, 58, 0.3)';
+                    if (!загрузка) {
+                      e.currentTarget.style.backgroundColor = '#C41E3A';
+                      e.currentTarget.style.boxShadow = '0 0 40px rgba(196, 30, 58, 0.3)';
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.boxShadow = 'none';
+                    if (!загрузка) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
                   }}
                 >
-                  Перейти к оплате
+                  {загрузка ? 'Создание платежа...' : 'Перейти к оплате'}
                 </button>
               </div>
 
