@@ -1,2 +1,177 @@
-# RaspberryLabEsotherics
-RaspberryLab
+# Laboratorio Lampone — Сайт
+
+Премиальный сайт для студии астрологии и таро с SEO-оптимизацией и аналитикой.
+
+## 🚀 Настройка аналитики
+
+### Google Analytics (GA4)
+
+1. Создайте аккаунт в [Google Analytics](https://analytics.google.com/)
+2. Создайте свойство (property) для вашего сайта
+3. Скопируйте ID потока данных (начинается с `G-`)
+4. Откройте `index.html` и замените `G-XXXXXXXXXX` на ваш ID (2 места)
+
+```html
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ВАШ_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ВАШ_ID');
+</script>
+```
+
+### Яндекс.Метрика
+
+1. Создайте счётчик в [Яндекс.Метрике](https://metrika.yandex.ru/)
+2. Скопируйте номер счётчика (8 цифр)
+3. Откройте `index.html` и замените `12345678` на ваш номер (3 места)
+
+```html
+ym(ВАШ_НОМЕР, "init", {
+  clickmap:true,
+  trackLinks:true,
+  accurateTrackBounce:true,
+  webvisor:true
+});
+```
+
+И в noscript:
+```html
+<noscript><div><img src="https://mc.yandex.ru/watch/ВАШ_НОМЕР" ... /></div></noscript>
+```
+
+## 📊 SEO-оптимизация
+
+### Что уже настроено:
+
+✅ **Мета-теги:**
+- Title, description, keywords
+- Open Graph (Facebook, VK, Telegram)
+- Twitter Cards
+- Canonical URL
+- Robots (index, follow)
+
+✅ **Структурированные данные (Schema.org):**
+- ProfessionalService
+- OfferCatalog с 6 услугами
+- Цены в рублях
+
+✅ **Техническое SEO:**
+- robots.txt
+- sitemap.xml
+- Семантическая HTML-разметка
+- Alt-теги для изображений
+- Favicon
+
+### Что нужно сделать:
+
+1. **Замените домен** в `index.html`:
+   - `https://laboratoriolampone.com.ru/` → ваш реальный домен
+   - В Open Graph тегах
+   - В canonical URL
+   - В Schema.org разметке
+
+2. **Создайте OG-изображение** (1200x630px):
+   - Сохраните как `public/og-image.jpg`
+   - Обновите URL в мета-тегах
+
+3. **Обновите sitemap.xml**:
+   - Замените дату на текущую
+   - Добавьте страницы, если появятся
+
+4. **Отправьте sitemap в поисковые системы**:
+   - [Яндекс.Вебмастер](https://webmaster.yandex.ru/)
+   - [Google Search Console](https://search.google.com/search-console/)
+
+## 🎨 Структура проекта
+
+```
+/
+├── index.html              # Главная страница с SEO и аналитикой
+├── public/
+│   ├── robots.txt         # Правила для поисковых ботов
+│   ├── sitemap.xml        # Карта сайта
+│   └── favicon.svg        # Иконка сайта
+└── src/
+    ├── App.tsx            # Основной компонент React
+    ├── index.css          # Стили Tailwind
+    └── main.tsx           # Точка входа
+```
+
+## 📱 Услуги на сайте
+
+### Личные консультации
+1. **Натальная Карта — Базовый** — 5 000 ₽
+2. **Натальная Карта — Расширенный** — 8 000 ₽
+3. **Таро-Консультация — Один вопрос** — 5 000 ₽
+4. **Таро-Консультация — Комплексный расклад** — 10 000 ₽
+5. **Прогностическая Сессия — Квартал** — 12 000 ₽
+6. **Прогностическая Сессия — Год** — 20 000 ₽
+
+### Бизнес-услуги
+7. **Бизнес-Астрология — Стандарт** — 25 000 ₽
+8. **Бизнес-Астрология — Расширенный** — 40 000 ₽
+9. **Корпоративная Астрология — До 10 человек** — 35 000 ₽
+10. **Корпоративная Астрология — До 20 человек** — 60 000 ₽
+11. **Стратегическое Планирование** — 50 000 ₽
+
+Полный прайс-лист в файле `PRICE_LIST.md`
+
+## 💳 Оплата
+
+- **Email для заявок:** reception@laboratoriolampone.com.ru
+- **Платёжный шлюз:** ЮKassa (инструкция в файле `PAYMENT_SETUP.md`)
+- **Безопасность:** PCI DSS, шифрование данных, без хранения реквизитов карт
+
+## 📧 Отправка заявок на почту
+
+Форма отправляет заявки напрямую на **reception@laboratoriolampone.com.ru** через ваш SMTP-сервер.
+
+**SMTP настройки:**
+- Сервер: `mail.laboratoriolampone.com.ru`
+- Порт: `465` (SSL/TLS)
+- Пользователь: `reception@laboratoriolampone.com.ru`
+
+**Настройка:**
+1. Перейдите в папку `server/`
+2. Установите зависимости: `npm install`
+3. Добавьте пароль от почты в `server/.env`
+4. Запустите сервер: `npm start`
+5. Подробная инструкция в файле `SMTP_SETUP.md`
+
+## 🔧 Разработка
+
+```bash
+# Установка зависимостей
+npm install
+
+# Запуск dev-сервера
+npm run dev
+
+# Сборка для продакшена
+npm run build
+```
+
+## 📈 Проверка SEO
+
+После деплоя проверьте:
+- [Google PageSpeed Insights](https://pagespeed.web.dev/)
+- [Яндекс.Вебмастер](https://webmaster.yandex.ru/)
+- [Google Search Console](https://search.google.com/search-console/)
+- [Schema.org Validator](https://validator.schema.org/)
+- [Open Graph Check](https://www.opengraph.xyz/)
+
+## 🎯 Рекомендации
+
+1. **Контент:** Регулярно обновляйте контент (блог, кейсы)
+2. **Скорость:** Оптимизируйте изображения (WebP/AVIF)
+3. **Мобильная версия:** Тестируйте на разных устройствах
+4. **Аналитика:** Настройте цели в GA4 и Яндекс.Метрике
+5. **Реклама:** Подключите Яндекс.Директ и Google Ads
+
+---
+
+**Версия:** 1.0  
+**Дата:** 2024-01-15  
+**Автор:** Laboratorio Lampone

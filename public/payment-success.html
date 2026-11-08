@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Оплата успешно завершена — Laboratorio Lampone" />
+    <title>Оплата завершена — Laboratorio Lampone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      html, body { 
+        margin: 0; 
+        padding: 0; 
+        width: 100%; 
+        min-height: 100vh;
+        background-color: #030712;
+        color: #F1F5F9;
+        font-family: 'Inter', sans-serif;
+      }
+      
+      .container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: linear-gradient(180deg, #030712 0%, #0B1021 50%, #2D1B3D 100%);
+      }
+      
+      .content {
+        max-width: 600px;
+        text-align: center;
+      }
+      
+      .icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(196, 30, 58, 0.2), rgba(147, 51, 234, 0.2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.9; }
+      }
+      
+      h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 48px;
+        font-weight: 300;
+        margin: 0 0 20px;
+        background: linear-gradient(135deg, #F1F5F9 0%, #E2D8F0 50%, #E5DEFF 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      p {
+        font-size: 18px;
+        line-height: 1.6;
+        color: #E2D8F0;
+        margin: 0 0 40px;
+      }
+      
+      .button {
+        display: inline-block;
+        padding: 16px 40px;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: #F1F5F9;
+        background-color: transparent;
+        border: 1px solid #C41E3A;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+      
+      .button:hover {
+        background-color: #C41E3A;
+        box-shadow: 0 0 40px rgba(196, 30, 58, 0.3);
+      }
+      
+      .info {
+        margin-top: 60px;
+        padding: 30px;
+        background: rgba(45, 27, 61, 0.2);
+        border: 1px solid rgba(147, 51, 234, 0.3);
+        border-radius: 2px;
+        text-align: left;
+      }
+      
+      .info h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 24px;
+        font-weight: 300;
+        color: #F1F5F9;
+        margin: 0 0 20px;
+      }
+      
+      .info p {
+        font-size: 14px;
+        margin: 0 0 15px;
+      }
+      
+      .info a {
+        color: #C41E3A;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+      
+      .info a:hover {
+        color: #E5DEFF;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="content">
+        <div class="icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C41E3A" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        
+        <h1>Оплата завершена</h1>
+        
+        <p>
+          Спасибо за вашу оплату! Мы получили ваш платёж и свяжемся с вами 
+          в течение 48 часов для подтверждения записи.
+        </p>
+        
+        <a href="/" class="button">Вернуться на главную</a>
+        
+        <div class="info">
+          <h3>Что дальше?</h3>
+          <p>
+            ✓ Мы проверим ваш платёж в течение 24 часов<br>
+            ✓ Свяжемся с вами по email для уточнения деталей<br>
+            ✓ Назначим удобное время для консультации<br>
+            ✓ Отправим подтверждение и инструкции
+          </p>
+          <p>
+            Если у вас есть вопросы, напишите нам:<br>
+            <a href="mailto:reception@laboratoriolampone.com.ru">reception@laboratoriolampone.com.ru</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
